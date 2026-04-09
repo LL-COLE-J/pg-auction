@@ -113,10 +113,24 @@ input {
 <script>
 
 const API = "https://us-central1-pg-auction.cloudfunctions.net/api";
-let USER_ID =
-  new URLSearchParams(window.location.search).get("bidder") ||
-  localStorage.getItem("bidder") ||
-  "guest";
+
+// ✅ FIXED USER SESSION (THIS WAS YOUR ISSUE)
+const params = new URLSearchParams(window.location.search);
+
+let USER_ID = params.get("bidder");
+
+if (!USER_ID) {
+  USER_ID = localStorage.getItem("USER_ID");
+}
+
+if (!USER_ID) {
+  USER_ID = "guest";
+}
+
+// persist for refresh
+localStorage.setItem("USER_ID", USER_ID);
+
+console.log("USER_ID:", USER_ID);
 
 // 🚨 force check-in if no bidder
 if (USER_ID === "guest") {
@@ -244,7 +258,7 @@ async function loadAuction() {
 }
 
 // =====================
-// REFRESH ITEMS (FIXED)
+// REFRESH ITEMS
 // =====================
 async function refreshItems() {
   const items = await fetchItems();
@@ -268,7 +282,7 @@ function goHome() {
 }
 
 // =====================
-// AUTO REFRESH (FIXED)
+// AUTO REFRESH
 // =====================
 setInterval(refreshItems, 3000);
 
