@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auction</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #111;
+  box-shadow: 0 2px 10px rgba(255, 0, 120, 0.2);
+}
+
+.title {
+  color: #ff4da6;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.nav-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: #ccc;
+  border: none;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+.nav-btn:hover {
+  background: #3a3a3a;
+}
+
+.container {
+  padding: 12px;
+}
+
+.item {
+  background: #161616;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,255,150,0.08);
+}
+
+.item h3 {
+  margin: 0 0 6px;
+}
+
+.item-img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 6px 0;
+}
+
+.bid-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+
+.bid-btn {
+  background: #00c853;
+  color: black;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="title">2026 Pink Gala Auction</div>
+  <div>
+    <button class="nav-btn" onclick="goHome()">Home</button>
+    <button class="nav-btn" onclick="showMyBids()">My Bids</button>
+  </div>
+</header>
+
+<div class="container" id="auctionView"></div>
+<div class="container hidden" id="myBidsView"></div>
+
+<script>
+
+const API = "https://us-central1-pg-auction.cloudfunctions.net/api";
+let USER_ID =
+  new URLSearchParams(window.location.search).get("bidder") ||
+  localStorage.getItem("bidder") ||
+  "guest";
+
+// 🚨 force check-in if no bidder
+if (USER_ID === "guest") {
+  alert("Please check in first");
+  window.location.href = "/";
+}
+
+// =====================
+// FETCH ITEMS
+// =====================
+async function fetchItems() {
+  const res = await fetch(API + "/items");
+  return await res.json();
+}
+
+// =====================
+// FETCH MY BIDS
+// =====================
+async function fetchMyBids() {
+  const res = await fetch(API + "/bids");
+  const all = await res.json();
+  return all.filter(b => b.bidder == USER_ID);
+}
+
+// =====================
+// PLACE BID
+// =====================
+async function placeBid(itemId, amount) {
+  const res = await fetch(API + "/bid", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      itemId,
+      amount,
+      bidder: USER_ID
+    })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert(data.error);
+  }
+
+  refreshItems();
+}
+
+// =====================
+// RENDER ITEMS
+// =====================
+function renderItems(items) {
+  const container = document.getElementById("auctionView");
+  container.innerHTML = "";
+
+  items.forEach(item => {
+    const el = document.createElement("div");
+    el.className = "item";
+
+    const current = item.currentBid || item.startingBid || 0;
+
+    el.innerHTML = `
+      <h3>${item.name}</h3>
+      <p>Current Bid: $${current}</p>
+
+      ${item.image ? `<img src="${item.image}" class="item-img">` : ""}
+
+      <div class="bid-row">
+        <input id="bid-${item.id}" placeholder="Enter bid">
+        <button class="bid-btn" onclick="submitBid('${item.id}', ${current}, ${item.bidIncrement})">
+          Bid
+        </button>
+      </div>
+    `;
+
+    container.appendChild(el);
+  });
+}
+
+// =====================
+// RENDER MY BIDS
+// =====================
+function renderMyBids(bids) {
+  const container = document.getElementById("myBidsView");
+  container.innerHTML = '<button class="nav-btn" onclick="loadAuction()">← Back</button>';
+
+  bids.forEach(b => {
+    const el = document.createElement("div");
+    el.className = "item";
+
+    el.innerHTML = `
+      <h3>${b.itemName || b.itemId}</h3>
+      <p>Your Bid: $${b.amount}</p>
+    `;
+
+    container.appendChild(el);
+  });
+}
+
+// =====================
+// SUBMIT BID
+// =====================
+function submitBid(itemId, current, increment) {
+  const input = document.getElementById("bid-" + itemId);
+  const amount = Number(input.value);
+
+  if (!amount) return alert("Enter a bid");
+
+  if (amount < current + increment) {
+    return alert("Minimum bid is $" + (current + increment));
+  }
+
+  placeBid(itemId, amount);
+}
+
+// =====================
+// LOAD AUCTION
+// =====================
+async function loadAuction() {
+  document.getElementById("auctionView").classList.remove("hidden");
+  document.getElementById("myBidsView").classList.add("hidden");
+
+  refreshItems();
+}
+
+// =====================
+// REFRESH ITEMS (FIXED)
+// =====================
+async function refreshItems() {
+  const items = await fetchItems();
+  renderItems(items);
+}
+
+// =====================
+// MY BIDS VIEW
+// =====================
+async function showMyBids() {
+  document.getElementById("auctionView").classList.add("hidden");
+  document.getElementById("myBidsView").classList.remove("hidden");
+
+  const bids = await fetchMyBids();
+  renderMyBids(bids);
+}
+
+// =====================
+function goHome() {
+  loadAuction();
+}
+
+// =====================
+// AUTO REFRESH (FIXED)
+// =====================
+setInterval(refreshItems, 3000);
+
+// =====================
+loadAuction();
+
+</script>
+
+</body>
+</html>

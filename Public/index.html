@@ -1,0 +1,33 @@
+console.log("DEPLOY QR VERSION");
+const { onRequest } = require("firebase-functions/v2/https");
+
+// =========================
+// API (keep for testing / future use)
+// =========================
+exports.api = onRequest((req, res) => {
+  res.send("API working");
+});
+
+
+// =========================
+// QR ENTRY POINT (THIS IS THE FIX)
+// =========================
+exports.qr = onRequest((req, res) => {
+  try {
+    const name = req.query.name || "Guest";
+    const bidder = req.query.bidder || "guest";
+    const table = req.query.table || "";
+
+    const redirectUrl =
+      "https://pg-auction.pages.dev/auction.html" +
+      "?name=" + encodeURIComponent(name) +
+      "&bidder=" + encodeURIComponent(bidder) +
+      "&table=" + encodeURIComponent(table);
+
+    res.redirect(302, redirectUrl);
+
+  } catch (err) {
+    console.error("QR ERROR:", err);
+    res.status(500).send("QR processing failed");
+  }
+});

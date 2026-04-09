@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "pg-auction",
+  "private_key_id": "...",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDAUDzQocNuW3yj\nQPJmblAEVs1bKcPMX/PenQuYbjN+mlhma3S4mL3pIkITjDwCd7hmhcbq9f8QNFcL\n2p55GMIE9KvJSz+IbdOj+6iePcImBJoBHBUFMRPm8jSFQxy3i2ePnuw2rTcV9L0v\nU9a9sLoacJ4/leM+V2yiyCLIPH5mAiMacoSW588mc2Wj/xuGbK2QU0AkXpxirSZ0\nSIXba0tDTLdzdeD8Ehmby8I9KyZE7OsR/dIcfEEfYAcqKux3TrFIvK0E9JzOhaHy\n0NHRgr7Jlbg5Vqbhe0VDqH12dlX6E3oXnWuzHb7JklHoSI8xL+ujKzze0QcfOfrK\n0DyzJ3srAgMBAAECgf9HiDuIe02n20NIIMPQOXDfSL+LfourJAWuOdhroXWF9zh4\np0amuGKV/5npq3imx6hdloFm5BltX1/k7Gx3gi/FNllaMPhwxqIOshsGFmR2MXje\nRiH9Pieav5kCakl9GHnCKwV43y3ziviavnghpNOUV2varK0S2I5XGowOYKrcKYMp\n9lo4GtKnkh/vmznWg9e+A26fUUH6WkY/2uQvHsVxI81EJx6hkRg5CJj0xUhrrmKO\nIFzKwelFU3DroL7ZMZ8cJScNwqhy1fFZVrEnO6aqHR65TNaycD20pyY4vOH9IJ1V\ngjkHOGgqnUkWschU8YKXCivWZJSADYRUFVaveZECgYEA3hKuMBygRpq+ypQU6N8i\nAoCPOHxZHC/Z9NEzAkkA1TOhTBCo9gTm5socsUW4EeUp2iLetiUm/W1O/6Kphudz\nSa0xb1eeqX3WPc4oLHrCtReFd4Lui57504pn3U+Dj4GWDLWLWWE+OaHdgid+ngDD\nBjS1SV/M93yMA36n3XOx7pMCgYEA3bGnwjdVKU4B+BgbDQP+KLofRGEAvrt9YZr4\nKPSpnEd4R/EciKvWzTlK4cwKyEjbfG8XQ+oqcx2QdbDXbdcdWj6sSkkzehJrbTSh\nXdFs7GXs/HHEZCd5PybeI+y0EBetsNjtU319RH0U+l8plDe74jSGbM5zjfswwf9E\nc0k4iAkCgYEAjnd1gDAdMq570AKIF41uiCRpvVco48hfD4xWKRUkj6J7zAy0GIC0\nkUMAfUm4+OIHo4XTUw8qoFLL53w3PfCmKZIOsNuJUjsEgsoLQ93No9ffK/i3iKMI\nqwmT8IreX+ZGmQiuyTx1awvIy4MC2+KpOwX9d4EaQXuJZ4SNtKhQcjkCgYEAmTlg\nqWt1AMdZtQ90ItrPn3aEhc5FpY4QapWhTy1KzSjYiWCsSAn8vHsMtmNAUI2KpcZi\nXh5KmKWmYrGHM/Op5eXLTsypN4Xjmeb2YNGOZxVLZm97PX3K30sN3eaLzVOQSNql\nrT7ehaeuCB4drsOWqBGFl05Zr5gdavfzZ3sEB4ECgYAnuLNLwJqy0aPAz0/zb4wy\notPygR6Jj26SY9z1/JzB7YG3pCqdd3KqVXt8D7lZEgnd5CCgjuqCrmehszbr/tYN\naBijGP6uBkDbaVlj46+8yjI1CbxYaQu1Io6i1TZ9ZNgYpLuoR1b2pmvfJMiINcSX\nkFwVy9H0GbJopaWq+i0wAg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@pg-auction.iam.gserviceaccount.com",
+  "client_id": "...",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "...",
+  "universe_domain": "googleapis.com"
+}
