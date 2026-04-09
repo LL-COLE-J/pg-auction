@@ -58,14 +58,6 @@ header {
   margin: 0 0 6px;
 }
 
-.item-img {
-  width: 100%;
-  max-height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin: 6px 0;
-}
-
 .bid-row {
   display: flex;
   gap: 6px;
@@ -114,7 +106,7 @@ input {
 
 const API = "https://us-central1-pg-auction.cloudfunctions.net/api";
 
-// ✅ FIXED USER SESSION (THIS WAS YOUR ISSUE)
+// ✅ USER SESSION (FIXED)
 const params = new URLSearchParams(window.location.search);
 
 let USER_ID = params.get("bidder");
@@ -127,7 +119,6 @@ if (!USER_ID) {
   USER_ID = "guest";
 }
 
-// persist for refresh
 localStorage.setItem("USER_ID", USER_ID);
 
 console.log("USER_ID:", USER_ID);
@@ -181,7 +172,7 @@ async function placeBid(itemId, amount) {
 }
 
 // =====================
-// RENDER ITEMS
+// RENDER ITEMS (NO IMAGES)
 // =====================
 function renderItems(items) {
   const container = document.getElementById("auctionView");
@@ -196,8 +187,6 @@ function renderItems(items) {
     el.innerHTML = `
       <h3>${item.name}</h3>
       <p>Current Bid: $${current}</p>
-
-      ${item.image ? `<img src="${item.image}" class="item-img">` : ""}
 
       <div class="bid-row">
         <input id="bid-${item.id}" placeholder="Enter bid">
