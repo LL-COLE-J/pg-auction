@@ -1,33 +1,283 @@
-console.log("DEPLOY QR VERSION");
-const { onRequest } = require("firebase-functions/v2/https");
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="data:,">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Pink Gala Check-In</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  font-family:'Poppins',sans-serif;
+  margin:0;
+  padding:20px;
+  text-align:center;
+  background:linear-gradient(135deg,#fff0f6,#ffe3ec);
+}
+
+.matchButton {
+  background: linear-gradient(135deg, #d63384, #ff4da6);
+  color: white;
+  margin: 10px auto;
+  padding: 18px;
+  border-radius: 12px;
+  max-width: 420px;
+  font-size: 22px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(214,51,132,0.35);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.matchButton:hover {
+  transform: scale(1.03);
+  box-shadow: 0 14px 30px rgba(214,51,132,0.5);
+}
+
+.matchButton:active {
+  transform: scale(0.97);
+}
+
+h1{ color:#d63384; }
+
+.tableCard{
+  margin-top:30px;
+  padding:50px 20px;
+  background:linear-gradient(135deg,#d63384,#ff66a3);
+  color:white;
+  border-radius:18px;
+}
+
+.tableNumber{ font-size:120px; }
+.bidderNumber{ font-size:32px; }
+.welcomeName{ font-size:28px; }
+
+input{
+  padding:20px;
+  font-size:24px;
+  width:100%;
+  max-width:420px;
+  border-radius:10px;
+  box-sizing:border-box;
+  margin:0 auto;
+  display:block;
+}
+
+button{
+  margin-top:15px;
+  padding:18px;
+  font-size:22px;
+  width:100%;
+  background:#d63384;
+  color:white;
+  border:none;
+  border-radius:10px;
+}
+
+#status{
+  margin-top:15px;
+  font-size:18px;
+  font-weight:600;
+  color:#d63384;
+}
+</style>
+
+</head>
+
+<body>
+
+<svg width="160" viewBox="0 0 200 300" style="display:block;margin:0 auto 15px;">
+  <defs>
+    <linearGradient id="pinkGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff4da6"/>
+      <stop offset="100%" stop-color="#d63384"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M100 40 C60 40, 40 80, 60 130 C75 165, 100 190, 100 190"
+        stroke="url(#pinkGrad)" stroke-width="30" fill="none" stroke-linecap="round"/>
+
+  <path d="M100 40 C140 40, 160 80, 140 130 C125 165, 100 190, 100 190"
+        stroke="url(#pinkGrad)" stroke-width="30" fill="none" stroke-linecap="round"/>
+
+  <path d="M100 190 L60 260" stroke="url(#pinkGrad)" stroke-width="30" stroke-linecap="round"/>
+  <path d="M100 190 L140 260" stroke="url(#pinkGrad)" stroke-width="30" stroke-linecap="round"/>
+</svg>
+
+<h1>Welcome to 2026 Pink Gala</h1>
+
+<input id="searchInput" placeholder="Search guest name..." />
+
+<div id="status">Loading guests...</div>
+<div id="loading">Loading...</div>
+
+<div id="guestList"></div>
+
+<script>
 
 // =========================
-// API (keep for testing / future use)
+// GLOBAL STATE
 // =========================
-exports.api = onRequest((req, res) => {
-  res.send("API working");
-});
+window.SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFeVWBQvxbh8AvC0HtN3wbcXga31CmbfeYef1opsgkc98omqTSjhaTANB5fw9e3-8N/exec";
 
+window.guestList = [];
+window.guestMap = {};
+window.checkedInSet = new Set();
+
+window.queue = [];
+window.inFlight = [];
+window.timer = null;
+window.sending = false;
 
 // =========================
-// QR ENTRY POINT (THIS IS THE FIX)
+// LOAD GUESTS
 // =========================
-exports.qr = onRequest((req, res) => {
-  try {
-    const name = req.query.name || "Guest";
-    const bidder = req.query.bidder || "guest";
-    const table = req.query.table || "";
+window.loadGuests = function() {
 
-    const redirectUrl =
-      "https://pg-auction.pages.dev/auction.html" +
-      "?name=" + encodeURIComponent(name) +
-      "&bidder=" + encodeURIComponent(bidder) +
-      "&table=" + encodeURIComponent(table);
+  fetch(SCRIPT_URL + "?guests=1")
+    .then(res => res.json())
+    .then(data => {
 
-    res.redirect(302, redirectUrl);
+      guestList = data.map((g,i)=>({
+        id:String(g.id ?? (i + 1)),
+        name:g.name || "",
+        bidder:g.bidder || "",
+        table:g.table || ""
+      }));
 
-  } catch (err) {
-    console.error("QR ERROR:", err);
-    res.status(500).send("QR processing failed");
+      guestList.forEach(g=>guestMap[g.id]=g);
+
+      document.getElementById("loading").style.display="none";
+      document.getElementById("status").innerText="Start typing name";
+
+    })
+    .catch(() => {
+      document.getElementById("status").innerText="Error loading guests";
+    });
+};
+
+// =========================
+// SEARCH
+// =========================
+window.handleSearch = function(e){
+
+  const term=e.target.value.toLowerCase().trim();
+  const container=document.getElementById("guestList");
+  container.innerHTML="";
+
+  if(!term) return;
+
+  const results=guestList
+    .filter(g=>g.name.toLowerCase().includes(term))
+    .slice(0,10);
+
+  results.forEach(g=>{
+    const div=document.createElement("div");
+    div.className="matchButton";
+    div.innerText=g.name;
+    div.onclick=()=>handleCheckIn(g.id);
+    container.appendChild(div);
+  });
+
+  document.getElementById("status").innerText=`${results.length} match(es)`;
+};
+
+// =========================
+// CHECK-IN
+// =========================
+window.handleCheckIn = function(id){
+
+  if(checkedInSet.has(id)) return;
+  checkedInSet.add(id);
+
+  const guest = guestMap[id];
+  if (!guest) return;
+
+  document.getElementById("guestList").innerHTML=`
+    <div class="tableCard">
+      <div class="welcomeName">${guest.name}</div>
+      <div class="tableNumber">${guest.table||"-"}</div>
+      <div class="bidderNumber">Bidder #${guest.bidder||"-"}</div>
+
+      <div style="margin-top:15px;font-size:20px;">
+        ✅ Checked In
+      </div>
+
+      <button onclick='enterAuction(${JSON.stringify(guest.name)}, ${JSON.stringify(guest.bidder)}, ${JSON.stringify(guest.table)})'>
+        Enter Auction Starting Bid
+      </button>
+    </div>
+  `;
+
+  confetti({particleCount:60,spread:70,origin:{y:0.6}});
+
+  queue.push(id);
+  startQueue();
+};
+
+// =========================
+// QUEUE ENGINE
+// =========================
+function startQueue() {
+  if (!timer) {
+    timer = setInterval(processQueue, 700);
   }
-});
+}
+
+function processQueue() {
+
+  if (sending) return;
+
+  if (queue.length === 0 && inFlight.length === 0) {
+    clearInterval(timer);
+    timer = null;
+    return;
+  }
+
+  sending = true;
+
+  let batch = inFlight.length > 0 ? inFlight.shift() : queue.splice(0, 20);
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: new URLSearchParams({
+      ids: JSON.stringify(batch)
+    })
+  })
+  .catch(() => {
+    inFlight.push(batch);
+  })
+  .finally(() => {
+    sending = false;
+  });
+}
+
+// =========================
+// NAV (FIXED)
+// =========================
+window.enterAuction = function(name,bidder,table){
+  window.location.href =
+    "/auction.html?name=" + encodeURIComponent(name) +
+    "&bidder=" + encodeURIComponent(bidder) +
+    "&table=" + encodeURIComponent(table);
+};
+
+// =========================
+// INIT
+// =========================
+window.onload=()=>{
+  loadGuests();
+  document.getElementById("searchInput").addEventListener("input",handleSearch);
+};
+
+</script>
+
+</body>
+</html>
