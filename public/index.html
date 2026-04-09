@@ -247,9 +247,10 @@ function processQueue() {
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    body: new URLSearchParams({
-      ids: JSON.stringify(batch)
-    })
+    bbody: new URLSearchParams({
+  ids: JSON.stringify(batch),
+  timestamp: Date.now()
+})
   })
   .catch(() => {
     inFlight.push(batch);
